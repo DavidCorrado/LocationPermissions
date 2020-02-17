@@ -8,30 +8,19 @@ import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Bundle
 import android.provider.Settings
-import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
-import com.davidcorrado.locationpermissions.MainActivity.LocationPermissionStep.LocationPermissionStep
-import com.davidcorrado.locationpermissions.MainActivity.LocationPermissionStep.LocationServicesStep
 import com.google.android.gms.common.api.ResolvableApiException
 import com.google.android.gms.location.*
 import com.google.android.gms.tasks.Task
+import kotlinx.android.synthetic.main.activity_main.*
 
 
 class MainActivity : AppCompatActivity() {
     companion object {
         private const val ACTIVITY_RESULT_LOCATION_SERVICES = 9100
         private const val ACTIVITY_RESULT_LOCATION_PERMISSIONS = 9200
-        private const val TAG = "MainActivity"
-    }
-
-    //1) Check Google Play Services Available
-    //2) Check Location Services Available
-    //3) Check Location Permission Available
-    enum class LocationPermissionStep {
-        LocationServicesStep,
-        LocationPermissionStep
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -40,77 +29,68 @@ class MainActivity : AppCompatActivity() {
         //TODO demo this
         //Have no means to know if permission was changed directly in settings.
         //Android restarts the activity if you revoke permissions.  If you grant permissions you should have a retry button that a user should press when they come back or some other smart solution.
-        requestLocationPermissions(LocationServicesStep)
+        requestLocationServices()
     }
 
-    override fun onResume() {
-        super.onResume()
-    }
-
-    private fun requestLocationPermissions(locationPermissionStep: LocationPermissionStep) {
-        when (locationPermissionStep) {
-            LocationServicesStep -> {
-                val locationRequest = LocationRequest().apply {
-                    interval = 10000
-                    fastestInterval = 5000
-                    priority = LocationRequest.PRIORITY_HIGH_ACCURACY
+    //1) Check Location Services Available
+    //2) Check Location Permission Available
+    private fun requestLocationServices() {
+        val locationRequest = LocationRequest().apply {
+            interval = 10000
+            fastestInterval = 5000
+            priority = LocationRequest.PRIORITY_HIGH_ACCURACY
+        }
+        val builder = LocationSettingsRequest.Builder()
+            .addLocationRequest(locationRequest)
+        val client: SettingsClient = LocationServices.getSettingsClient(this)
+        val task: Task<LocationSettingsResponse> =
+            client.checkLocationSettings(builder.build())
+        task.addOnSuccessListener {
+            requestLocationPermissions()
+        }.addOnFailureListener { exception ->
+            if (exception is ResolvableApiException) {
+                try {
+                    exception.startResolutionForResult(
+                        this@MainActivity,
+                        ACTIVITY_RESULT_LOCATION_SERVICES
+                    )
+                } catch (sendEx: IntentSender.SendIntentException) {
+                    //Everywhere online says its ok to ignore this
                 }
-                val builder = LocationSettingsRequest.Builder()
-                    .addLocationRequest(locationRequest)
-                val client: SettingsClient = LocationServices.getSettingsClient(this)
-                val task: Task<LocationSettingsResponse> =
-                    client.checkLocationSettings(builder.build())
-                task.addOnSuccessListener {
-                    requestLocationPermissions(LocationPermissionStep)
-                }.addOnFailureListener { exception ->
-                    if (exception is ResolvableApiException) {
-                        try {
-                            exception.startResolutionForResult(
-                                this@MainActivity,
-                                ACTIVITY_RESULT_LOCATION_SERVICES
-                            )
-                        } catch (sendEx: IntentSender.SendIntentException) {
-                            Log.w(
-                                TAG,
-                                "Location Services Denied via pressing No Thanks button on dialog"
-                            )
-                        }
-                    } else {
-                        Log.w(TAG, "Location Services Denied???3")
-                    }
-                }
-
+            } else {
+                //I believe when Play Services Not installed
+                tv_label.text = "Location Services Denied2"
             }
-            else -> {
-                val locationPermission = android.Manifest.permission.ACCESS_FINE_LOCATION
-                val permissionGranted = ContextCompat.checkSelfPermission(
+        }
+    }
+
+    private fun requestLocationPermissions() {
+        val locationPermission = android.Manifest.permission.ACCESS_FINE_LOCATION
+        val permissionGranted = ContextCompat.checkSelfPermission(
+            this,
+            locationPermission
+        ) == PackageManager.PERMISSION_GRANTED
+        if (!permissionGranted) {
+            if (ActivityCompat.shouldShowRequestPermissionRationale(
                     this,
                     locationPermission
-                ) == PackageManager.PERMISSION_GRANTED
-                if (!permissionGranted) {
-                    if (ActivityCompat.shouldShowRequestPermissionRationale(
-                            this,
-                            locationPermission
-                        )
-                    ) {
-                        AlertDialog.Builder(this)
-                            .setMessage("I need location because...")
-                            .setTitle("I need location")
-                            .setPositiveButton("Ok") { _, _ ->
-                                requestLocationPermission(arrayOf(locationPermission))
-                            }.setNegativeButton("Cancel") { _, _ ->
-                                Log.w(
-                                    TAG,
-                                    "Location Permissions Denied by pressing cancel on permission rationale"
-                                )
-                            }.show()
-                    } else {
+                )
+            ) {
+                AlertDialog.Builder(this)
+                    .setTitle("Allow to access your location?")
+                    .setMessage("Rationale Here")
+                    .setPositiveButton("OK") { _, _ ->
                         requestLocationPermission(arrayOf(locationPermission))
-                    }
-                } else {
-                    Log.w(TAG, "Location Permissions Already accepted")
-                }
+                    }.setNegativeButton("Cancel") { _, _ ->
+                        //Denied by pressing cancel on permission rationale
+                        tv_label.text = "Permission Denied1"
+                    }.show()
+            } else {
+                requestLocationPermission(arrayOf(locationPermission))
             }
+        } else {
+            //Accepted before started
+            tv_label.text = "Permission Authorized1"
         }
     }
 
@@ -121,9 +101,10 @@ class MainActivity : AppCompatActivity() {
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         when (requestCode) {
             ACTIVITY_RESULT_LOCATION_SERVICES -> if (resultCode == Activity.RESULT_OK) {
-                requestLocationPermissions(LocationPermissionStep)
+                requestLocationPermissions()
             } else {
-                Log.w(TAG, "Location Services Denied via Cancelling the dialog(Pressed Back)")
+                //Location services dialog cancelled(back)
+                tv_label.text = "Location Services Denied3"
             }
             else -> super.onActivityResult(requestCode, resultCode, data)
         }
@@ -137,34 +118,34 @@ class MainActivity : AppCompatActivity() {
         if (requestCode == ACTIVITY_RESULT_LOCATION_PERMISSIONS) {
             if (grantResults.isEmpty()) {
                 //https://developer.android.com/reference/android/app/Activity.html#onRequestPermissionsResult(int,%20java.lang.String%5B%5D,%20int%5B%5D)
-                Log.w(TAG, "Location Permissions Cancelled")
+                //Cancelled
+                tv_label.text = "Permission Denied2"
                 return
             }
             val grantResult = grantResults[0]
             if (grantResult == PackageManager.PERMISSION_GRANTED) {
-                Log.w(TAG, "Location Permissions Pressed Allow button.")
+                //Permission Dialog pressed allowed
+                tv_label.text = "Permission Authorized2"
             } else if (grantResult == PackageManager.PERMISSION_DENIED
                 && !ActivityCompat.shouldShowRequestPermissionRationale(this, permissions[0])
             ) {
-                //TODO dont show this on first deny forever
-                Log.w(TAG, "Location Permissions Deny(Don't Ask Again)")
+                //Note dialog will show when you deny forever the first time and every time you reload the page afterwards
                 //Optionally Show Rationale and redirect to location settings
 
                 AlertDialog.Builder(this)
-                    .setMessage("I need location because...")
-                    .setTitle("I need location")
-                    .setPositiveButton("Ok") { _, _ ->
+                    .setTitle("Allow to access your location?")
+                    .setMessage("Rationale Here")
+                    .setPositiveButton("OK") { _, _ ->
                         startActivity(Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
                             data = Uri.fromParts("package", packageName, null)
                         })
                     }.setNegativeButton("Cancel") { _, _ ->
-                        Log.w(
-                            TAG,
-                            "Location Permissions Denied by pressing cancel on permission rationale"
-                        )
+                        //Cancel permission rationale
+                        tv_label.text = "Permission Denied3"
                     }.show()
             } else {
-                Log.w(TAG, "Location Permissions Denied by pressing Deny button")
+                //Pressed permission Deny Button
+                tv_label.text = "Permission Denied4"
             }
         }
     }

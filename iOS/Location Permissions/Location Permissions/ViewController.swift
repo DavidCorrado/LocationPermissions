@@ -24,31 +24,27 @@ class ViewController: UIViewController, CLLocationManagerDelegate {
                     //locationManager.requestLocation()
                     return
                 case .denied, .restricted:
-                    print("Permission Denied")
-                    label.text = "Permission Denied"
+                    label.text = "Permission Denied1"
                     createSettingsAlertController()
                     return
                 case .authorizedAlways, .authorizedWhenInUse:
-                    print("Permission Authorized")
-                    label.text = "Permission Authorized"
+                    label.text = "Permission Authorized1"
                     break
                 @unknown default:
                     fatalError()
             }
         } else {
-            print("Location Services Denied")
-            label.text = "Location Services Denied"
+            label.text = "Location Services Denied1"
             createSettingsAlertController()
         }
     }
     
     func locationManager(_ manager: CLLocationManager, didChangeAuthorization status: CLAuthorizationStatus) {
         if (status == CLAuthorizationStatus.denied) {
-            print("Permission Denied")
-            label.text = "Permission Denied"
+
+            label.text = "Permission Denied2"
         } else if (status == CLAuthorizationStatus.authorizedAlways) {
-            print("Permission Authorized")
-            label.text = "Permission Authorized"
+            label.text = "Permission Authorized2"
         }
     }
     
