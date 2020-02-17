@@ -18,12 +18,29 @@
                     <view key="view" contentMode="scaleToFill" id="8bC-Xf-vdC">
                         <rect key="frame" x="0.0" y="0.0" width="414" height="896"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="KT8-Hb-MpQ">
+                                <rect key="frame" x="0.0" y="44" width="414" height="818"/>
+                                <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                <nil key="textColor"/>
+                                <nil key="highlightedColor"/>
+                            </label>
+                        </subviews>
                         <color key="backgroundColor" systemColor="systemBackgroundColor" cocoaTouchSystemColor="whiteColor"/>
+                        <constraints>
+                            <constraint firstAttribute="trailing" secondItem="KT8-Hb-MpQ" secondAttribute="trailing" id="Fk7-j6-oTs"/>
+                            <constraint firstItem="KT8-Hb-MpQ" firstAttribute="top" secondItem="4J6-wP-BeL" secondAttribute="bottom" id="drc-bg-say"/>
+                            <constraint firstItem="KT8-Hb-MpQ" firstAttribute="leading" secondItem="8bC-Xf-vdC" secondAttribute="leading" id="e7v-Dh-R8U"/>
+                            <constraint firstItem="JbC-H5-u4P" firstAttribute="top" secondItem="KT8-Hb-MpQ" secondAttribute="bottom" id="rbd-kg-c9K"/>
+                        </constraints>
                     </view>
+                    <connections>
+                        <outlet property="label" destination="KT8-Hb-MpQ" id="WEg-IG-SaI"/>
+                    </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="dkx-z0-nzr" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="139" y="138"/>
+            <point key="canvasLocation" x="137.68115942028987" y="137.94642857142856"/>
         </scene>
     </scenes>
 </document>

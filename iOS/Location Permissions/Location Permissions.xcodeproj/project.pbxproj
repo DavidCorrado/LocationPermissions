@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		768663C023FA3A3900C0D4B3 /* CoreLocation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 768663BF23FA3A3900C0D4B3 /* CoreLocation.framework */; };
 		76F1E61123F9FE790039419F /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 76F1E61023F9FE790039419F /* AppDelegate.swift */; };
 		76F1E61523F9FE790039419F /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 76F1E61423F9FE790039419F /* ViewController.swift */; };
 		76F1E61823F9FE790039419F /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 76F1E61623F9FE790039419F /* Main.storyboard */; };
@@ -15,6 +16,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		768663BF23FA3A3900C0D4B3 /* CoreLocation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreLocation.framework; path = System/Library/Frameworks/CoreLocation.framework; sourceTree = SDKROOT; };
 		76F1E60D23F9FE790039419F /* Location Permissions.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Location Permissions.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		76F1E61023F9FE790039419F /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		76F1E61423F9FE790039419F /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
@@ -29,17 +31,27 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				768663C023FA3A3900C0D4B3 /* CoreLocation.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		768663BE23FA3A3900C0D4B3 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				768663BF23FA3A3900C0D4B3 /* CoreLocation.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
 		76F1E60423F9FE790039419F = {
 			isa = PBXGroup;
 			children = (
 				76F1E60F23F9FE790039419F /* Location Permissions */,
 				76F1E60E23F9FE790039419F /* Products */,
+				768663BE23FA3A3900C0D4B3 /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
