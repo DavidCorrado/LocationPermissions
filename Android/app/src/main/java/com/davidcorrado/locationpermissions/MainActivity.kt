@@ -26,9 +26,8 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-        //TODO demo this
-        //Have no means to know if permission was changed directly in settings.
-        //Android restarts the activity if you revoke permissions.  If you grant permissions you should have a retry button that a user should press when they come back or some other smart solution.
+        //Android restarts the activity if you revoke permissions.  If you grant permissions you should have something that polls if permission is granted when denied or have a retry button
+        //https://stackoverflow.com/questions/32718933/broadcast-action-on-permission-change-in-android-m
         requestLocationServices()
     }
 
