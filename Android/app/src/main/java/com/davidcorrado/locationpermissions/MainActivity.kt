@@ -2,15 +2,18 @@ package com.davidcorrado.locationpermissions
 
 import android.app.Activity
 import android.app.AlertDialog
+import android.content.Context
 import android.content.Intent
 import android.content.IntentSender
 import android.content.pm.PackageManager
+import android.location.LocationManager
 import android.net.Uri
 import android.os.Bundle
 import android.provider.Settings
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.core.location.LocationManagerCompat
 import com.google.android.gms.common.api.ResolvableApiException
 import com.google.android.gms.location.*
 import com.google.android.gms.tasks.Task
@@ -34,13 +37,12 @@ class MainActivity : AppCompatActivity() {
     //1) Check Location Services Available
     //2) Check Location Permission Available
     private fun requestLocationServices() {
-        val locationRequest = LocationRequest().apply {
-            interval = 10000
-            fastestInterval = 5000
-            priority = LocationRequest.PRIORITY_HIGH_ACCURACY
+        val locationManager = getSystemService(Context.LOCATION_SERVICE) as LocationManager
+        if(LocationManagerCompat.isLocationEnabled(locationManager)){
+            requestLocationPermissions()
+            return
         }
-        val builder = LocationSettingsRequest.Builder()
-            .addLocationRequest(locationRequest)
+        val builder = LocationSettingsRequest.Builder().addLocationRequest(LocationRequest())
         val client: SettingsClient = LocationServices.getSettingsClient(this)
         val task: Task<LocationSettingsResponse> =
             client.checkLocationSettings(builder.build())
@@ -55,6 +57,7 @@ class MainActivity : AppCompatActivity() {
                     )
                 } catch (sendEx: IntentSender.SendIntentException) {
                     //Everywhere online says its ok to ignore this
+                    tv_label.text = "Location Services Denied2"
                 }
             } else {
                 //I believe when Play Services Not installed

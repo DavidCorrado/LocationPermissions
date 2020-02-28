@@ -1,6 +1,6 @@
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:location_services_permissions/location_services_permissions.dart';
+//import 'package:location_services_permissions/location_services_permissions.dart';
 
 void main() {
   const MethodChannel channel = MethodChannel('location_services_permissions');
@@ -17,7 +17,7 @@ void main() {
     channel.setMockMethodCallHandler(null);
   });
 
-  test('getPlatformVersion', () async {
-    expect(await LocationServicesPermissions.platformVersion, '42');
-  });
+//  test('getPlatformVersion', () async {
+//    expect(await LocationServicesPermissions.platformVersion, '42');
+//  });
 }
