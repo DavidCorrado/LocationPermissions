@@ -24,8 +24,8 @@ class _MyAppState extends State<MyApp> {
           }
 
           //if (snapshot.data == GeolocationStatus.denied) {
-          return Text(snapshot.data.locationServicesPermissionsState.toString(),
-              textDirection: TextDirection.ltr);
+          return Center(child: Text(snapshot.data.locationServicesPermissionsState.toString(),
+              textDirection: TextDirection.ltr));
           //}
 
           // return _buildListView();
