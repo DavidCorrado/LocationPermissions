@@ -2,14 +2,26 @@ import Flutter
 import UIKit
 import CoreLocation
 
-public class SwiftLocationServicesPermissionsPlugin: NSObject, FlutterPlugin, FlutterStreamHandler, CLLocationManagerDelegate {
+public class SwiftLocationServicesPermissionsPlugin: NSObject, FlutterPlugin, FlutterStreamHandler, UIApplicationDelegate, CLLocationManagerDelegate {
     private var locationServicesAndPermissionsCallback: LocationServicesAndPermissionsCallback? = nil
     private let locationManager = CLLocationManager()
+    
     public static func register(with registrar: FlutterPluginRegistrar) {
         let eventChannel = FlutterEventChannel(name: "corradodev.com/location_services_permissions/updates", binaryMessenger: registrar.messenger())
         let instance = SwiftLocationServicesPermissionsPlugin()
         registrar.addApplicationDelegate(instance)
         eventChannel.setStreamHandler(instance)
+    }
+    
+    public override init() {
+        super.init()
+        locationManager.delegate = self
+    }
+    
+    public func applicationDidBecomeActive(_ application: UIApplication) {
+        if(locationServicesAndPermissionsCallback != nil){
+            requestLocationServices()
+        }
     }
 
     public func onListen(withArguments arguments: Any?, eventSink events: @escaping FlutterEventSink) -> FlutterError? {
@@ -25,7 +37,6 @@ public class SwiftLocationServicesPermissionsPlugin: NSObject, FlutterPlugin, Fl
         return nil
     }
     private func requestLocationServices() {
-        locationManager.delegate = self
         if(CLLocationManager.locationServicesEnabled()) {
             let locStatus = CLLocationManager.authorizationStatus()
             switch locStatus {
