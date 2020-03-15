@@ -19,6 +19,7 @@ import androidx.core.location.LocationManagerCompat
 import com.google.android.gms.common.api.ResolvableApiException
 import com.google.android.gms.location.*
 import com.google.android.gms.tasks.Task
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import io.flutter.embedding.engine.plugins.FlutterPlugin
 import io.flutter.embedding.engine.plugins.activity.ActivityAware
 import io.flutter.embedding.engine.plugins.activity.ActivityPluginBinding
@@ -193,7 +194,7 @@ class LocationServicesPermissionsPlugin : FlutterPlugin, ViewDestroyListener, Ev
                             locationPermission
                     )
             ) {
-                AlertDialog.Builder(activity, android.R.style.Theme_Material_Light_Dialog)
+                MaterialAlertDialogBuilder(activity, R.style.Theme_MaterialComponents_Light_Dialog_Alert)
                         .setTitle("Allow to access your location?")
                         .setMessage("Rationale Here")
                         .setPositiveButton("OK") { _, _ ->
@@ -236,7 +237,7 @@ class LocationServicesPermissionsPlugin : FlutterPlugin, ViewDestroyListener, Ev
                 //Note dialog will show when you deny forever the first time and every time you reload the page afterwards
                 //Optionally Show Rationale and redirect to location settings
 
-                AlertDialog.Builder(activity, android.R.style.Theme_Material_Light_Dialog)
+                MaterialAlertDialogBuilder(activity, R.style.Theme_MaterialComponents_Light_Dialog_Alert)
                         .setTitle("Allow to access your location?")
                         .setMessage("Rationale Here")
                         .setPositiveButton("OK") { _, _ ->
