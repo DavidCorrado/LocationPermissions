@@ -29,18 +29,14 @@ import io.flutter.view.FlutterNativeView
 /** LocationServicesPermissionsPlugin */
 class LocationServicesPermissionsPlugin : FlutterPlugin, ViewDestroyListener, EventChannel.StreamHandler, ActivityAware, Application.ActivityLifecycleCallbacks, PluginRegistry.RequestPermissionsResultListener, PluginRegistry.ActivityResultListener {
     private var activityBinding: ActivityPluginBinding? = null
-    private var locationServicesAndPermissionsCallback: ((String) -> Unit)? = null
-    private var lastLocationServicesAndPermissionStatus: String? = null
-    //TODO enum and move to companion?
-    private val locationServicesDisabled = "LocationServicesDisabled"
-    private val locationPermissionDenied = "LocationPermissionDenied"
-    private val locationPermissionAllowed = "LocationPermissionAllowed"
-    private val locationPermission = android.Manifest.permission.ACCESS_FINE_LOCATION
+    private var locationServicesAndPermissionsCallback: ((LocationServicesAndPermissionStatus) -> Unit)? = null
+    private var lastLocationServicesAndPermissionStatus: LocationServicesAndPermissionStatus? = null
 
     companion object {
         private const val EVENT_CHANNEL_NAME = "corradodev.com/location_services_permissions/updates"
         private const val ACTIVITY_RESULT_LOCATION_SERVICES = 9100
         private const val ACTIVITY_RESULT_LOCATION_PERMISSIONS = 9200
+        private const val LOCATION_PERMISSION = android.Manifest.permission.ACCESS_FINE_LOCATION
     }
 
     // FlutterPlugin
@@ -61,7 +57,7 @@ class LocationServicesPermissionsPlugin : FlutterPlugin, ViewDestroyListener, Ev
     override fun onListen(arguments: Any?, events: EventChannel.EventSink?) {
         locationServicesAndPermissionsCallback = {
             lastLocationServicesAndPermissionStatus = it
-            events?.success(it)
+            events?.success(it.name)
         }
         requestLocationServices()
     }
@@ -129,12 +125,12 @@ class LocationServicesPermissionsPlugin : FlutterPlugin, ViewDestroyListener, Ev
             if (grantResults?.isEmpty() == true) {
                 //Location permission request interrupted
                 //https://developer.android.com/reference/android/app/Activity.html#onRequestPermissionsResult(int,%20java.lang.String%5B%5D,%20int%5B%5D)
-                locationServicesAndPermissionsCallback?.invoke(locationPermissionDenied)
+                locationServicesAndPermissionsCallback?.invoke(LocationServicesAndPermissionStatus.LocationPermissionDenied)
                 return true
             }
             val grantResult = grantResults!![0]
             if (grantResult == PackageManager.PERMISSION_GRANTED) {//Location permission dialog pressed "Allow"
-                locationServicesAndPermissionsCallback?.invoke(locationPermissionAllowed)
+                locationServicesAndPermissionsCallback?.invoke(LocationServicesAndPermissionStatus.LocationPermissionAllowed)
             } else if (grantResult == PackageManager.PERMISSION_DENIED
                     && !ActivityCompat.shouldShowRequestPermissionRationale(activity, permissions!![0])
             ) { //Location permission denied forever
@@ -148,11 +144,11 @@ class LocationServicesPermissionsPlugin : FlutterPlugin, ViewDestroyListener, Ev
                             })
                         }.setNegativeButton("Cancel") { _, _ ->
                             //Location dialog denied by pressing "Cancel"
-                            locationServicesAndPermissionsCallback?.invoke(locationPermissionDenied)
+                            locationServicesAndPermissionsCallback?.invoke(LocationServicesAndPermissionStatus.LocationPermissionDenied)
                         }.show()
             } else {
                 //Location permission dialog pressed "Deny" button
-                locationServicesAndPermissionsCallback?.invoke(locationPermissionDenied)
+                locationServicesAndPermissionsCallback?.invoke(LocationServicesAndPermissionStatus.LocationPermissionDenied)
             }
             return true
         }
@@ -167,7 +163,7 @@ class LocationServicesPermissionsPlugin : FlutterPlugin, ViewDestroyListener, Ev
                     requestLocationPermissions()
                 } else {
                     //Location services dialog pressed back or pressed "No Thanks" button
-                    locationServicesAndPermissionsCallback?.invoke(locationServicesDisabled)
+                    locationServicesAndPermissionsCallback?.invoke(LocationServicesAndPermissionStatus.LocationServicesDisabled)
                 }
                 return true
             }
@@ -185,7 +181,7 @@ class LocationServicesPermissionsPlugin : FlutterPlugin, ViewDestroyListener, Ev
         task.addOnSuccessListener {
             requestLocationPermissions()
         }.addOnFailureListener { exception ->
-            locationServicesAndPermissionsCallback?.invoke(locationServicesDisabled)
+            locationServicesAndPermissionsCallback?.invoke(LocationServicesAndPermissionStatus.LocationServicesDisabled)
             if (exception is ResolvableApiException) {
                 try {
                     //Try to resolve the location permission issue.
@@ -203,23 +199,23 @@ class LocationServicesPermissionsPlugin : FlutterPlugin, ViewDestroyListener, Ev
         val activity = activityBinding!!.activity
         val permissionGranted = isLocationPermissionGranted()
         if (!permissionGranted) {
-            if (ActivityCompat.shouldShowRequestPermissionRationale(activity, locationPermission)) {
+            if (ActivityCompat.shouldShowRequestPermissionRationale(activity, LOCATION_PERMISSION)) {
                 MaterialAlertDialogBuilder(activity, R.style.Theme_MaterialComponents_Light_Dialog_Alert)
                         .setTitle("Allow to access your location?")
                         .setMessage("Permission required in order to request local events.")
                         .setCancelable(false)
                         .setPositiveButton("OK") { _, _ ->
-                            requestLocationPermission(arrayOf(locationPermission))
+                            requestLocationPermission(arrayOf(LOCATION_PERMISSION))
                         }.setNegativeButton("Cancel") { _, _ ->
                             //Location dialog denied by pressing "Cancel"
-                            locationServicesAndPermissionsCallback?.invoke(locationPermissionDenied)
+                            locationServicesAndPermissionsCallback?.invoke(LocationServicesAndPermissionStatus.LocationPermissionDenied)
                         }.show()
             } else {
-                requestLocationPermission(arrayOf(locationPermission))
+                requestLocationPermission(arrayOf(LOCATION_PERMISSION))
             }
         } else {
             //Accepted location permission before app loaded
-            locationServicesAndPermissionsCallback?.invoke(locationPermissionAllowed)
+            locationServicesAndPermissionsCallback?.invoke(LocationServicesAndPermissionStatus.LocationPermissionAllowed)
         }
     }
 
@@ -228,15 +224,15 @@ class LocationServicesPermissionsPlugin : FlutterPlugin, ViewDestroyListener, Ev
             return
         }
         if (!isLocationEnabled()) {
-            updateLocationServicesAndPermissionCallbackIfChanged(locationServicesDisabled)
+            updateLocationServicesAndPermissionCallbackIfChanged(LocationServicesAndPermissionStatus.LocationServicesDisabled)
         } else if (isLocationPermissionGranted()) {
-            updateLocationServicesAndPermissionCallbackIfChanged(locationPermissionAllowed)
+            updateLocationServicesAndPermissionCallbackIfChanged(LocationServicesAndPermissionStatus.LocationPermissionAllowed)
         } else {
-            updateLocationServicesAndPermissionCallbackIfChanged(locationPermissionDenied)
+            updateLocationServicesAndPermissionCallbackIfChanged(LocationServicesAndPermissionStatus.LocationPermissionDenied)
         }
     }
 
-    private fun updateLocationServicesAndPermissionCallbackIfChanged(status: String) {
+    private fun updateLocationServicesAndPermissionCallbackIfChanged(status: LocationServicesAndPermissionStatus) {
         if (lastLocationServicesAndPermissionStatus != status) {
             locationServicesAndPermissionsCallback?.invoke(status)
         }
@@ -250,7 +246,7 @@ class LocationServicesPermissionsPlugin : FlutterPlugin, ViewDestroyListener, Ev
     private fun isLocationPermissionGranted(): Boolean {
         return ContextCompat.checkSelfPermission(
                 activityBinding!!.activity,
-                locationPermission
+                LOCATION_PERMISSION
         ) == PackageManager.PERMISSION_GRANTED
     }
 
