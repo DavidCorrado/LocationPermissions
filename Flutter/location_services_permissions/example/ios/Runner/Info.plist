@@ -11,7 +11,7 @@
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundleName</key>
-	<string>location_services_permissions_example</string>
+	<string>Runner</string>
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
@@ -24,12 +24,8 @@
 	<string></string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
-	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
-	<string>Always &amp; WHen In Use Desc</string>
-	<key>NSLocationAlwaysUsageDescription</key>
-	<string>Always Desc</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
-	<string>When In Use Desc</string>
+	<string>Location Services required in order to request local events.</string>
 	<key>UILaunchStoryboardName</key>
 	<string>LaunchScreen</string>
 	<key>UIMainStoryboardFile</key>

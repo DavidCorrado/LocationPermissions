@@ -135,7 +135,7 @@ class LocationServicesPermissionsPlugin : FlutterPlugin, ViewDestroyListener, Ev
                     && !ActivityCompat.shouldShowRequestPermissionRationale(activity, permissions!![0])
             ) { //Location permission denied forever
                 MaterialAlertDialogBuilder(activity, R.style.Theme_MaterialComponents_Light_Dialog_Alert)
-                        .setTitle("Allow to access your location?")
+                        .setTitle("Location permission required")
                         .setMessage("Permission required in order to request local events.")
                         .setCancelable(false)
                         .setPositiveButton("OK") { _, _ ->
@@ -201,7 +201,7 @@ class LocationServicesPermissionsPlugin : FlutterPlugin, ViewDestroyListener, Ev
         if (!permissionGranted) {
             if (ActivityCompat.shouldShowRequestPermissionRationale(activity, LOCATION_PERMISSION)) {
                 MaterialAlertDialogBuilder(activity, R.style.Theme_MaterialComponents_Light_Dialog_Alert)
-                        .setTitle("Allow to access your location?")
+                        .setTitle("Location permission required")
                         .setMessage("Permission required in order to request local events.")
                         .setCancelable(false)
                         .setPositiveButton("OK") { _, _ ->
