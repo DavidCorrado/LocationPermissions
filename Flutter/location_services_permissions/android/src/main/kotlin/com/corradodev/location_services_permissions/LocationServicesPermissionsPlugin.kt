@@ -138,10 +138,9 @@ class LocationServicesPermissionsPlugin : FlutterPlugin, ViewDestroyListener, Ev
             } else if (grantResult == PackageManager.PERMISSION_DENIED
                     && !ActivityCompat.shouldShowRequestPermissionRationale(activity, permissions!![0])
             ) { //Location permission denied forever
-                //TODO finalize the text in the dialog
                 MaterialAlertDialogBuilder(activity, R.style.Theme_MaterialComponents_Light_Dialog_Alert)
                         .setTitle("Allow to access your location?")
-                        .setMessage("Rationale Here")
+                        .setMessage("Permission required in order to request local events.")
                         .setCancelable(false)
                         .setPositiveButton("OK") { _, _ ->
                             activity.startActivity(Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
@@ -186,7 +185,7 @@ class LocationServicesPermissionsPlugin : FlutterPlugin, ViewDestroyListener, Ev
         task.addOnSuccessListener {
             requestLocationPermissions()
         }.addOnFailureListener { exception ->
-            //TODO might handle more sitautions or always return disabled?
+            locationServicesAndPermissionsCallback?.invoke(locationServicesDisabled)
             if (exception is ResolvableApiException) {
                 try {
                     //Try to resolve the location permission issue.
@@ -194,12 +193,8 @@ class LocationServicesPermissionsPlugin : FlutterPlugin, ViewDestroyListener, Ev
                             ACTIVITY_RESULT_LOCATION_SERVICES
                     )
                 } catch (sendEx: IntentSender.SendIntentException) {
-                    //Everywhere online says its ok to ignore this but just in case say disabled
-                    locationServicesAndPermissionsCallback?.invoke(locationServicesDisabled)
+                    // Ignore the error.
                 }
-            } else {
-                //Not sure when this happens.  Assume when play services not installed
-                locationServicesAndPermissionsCallback?.invoke(locationServicesDisabled)
             }
         }
     }
@@ -211,7 +206,7 @@ class LocationServicesPermissionsPlugin : FlutterPlugin, ViewDestroyListener, Ev
             if (ActivityCompat.shouldShowRequestPermissionRationale(activity, locationPermission)) {
                 MaterialAlertDialogBuilder(activity, R.style.Theme_MaterialComponents_Light_Dialog_Alert)
                         .setTitle("Allow to access your location?")
-                        .setMessage("Rationale Here")
+                        .setMessage("Permission required in order to request local events.")
                         .setCancelable(false)
                         .setPositiveButton("OK") { _, _ ->
                             requestLocationPermission(arrayOf(locationPermission))
