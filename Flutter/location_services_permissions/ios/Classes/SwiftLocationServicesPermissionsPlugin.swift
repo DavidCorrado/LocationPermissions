@@ -3,9 +3,9 @@ import UIKit
 import CoreLocation
 
 public class SwiftLocationServicesPermissionsPlugin: NSObject, FlutterPlugin, FlutterStreamHandler, UIApplicationDelegate, CLLocationManagerDelegate {
-    private var locationServicesAndPermissionsCallback: ((String) -> Void)? = nil
+    private var locationServicesAndPermissionsCallback: ((LocationServicesAndPermissionStatus) -> Void)? = nil
     private let locationManager = CLLocationManager()
-    private var lastLocationServicesAndPermissionStatus: String? = nil
+    private var lastLocationServicesAndPermissionStatus: LocationServicesAndPermissionStatus? = nil
     
     public static func register(with registrar: FlutterPluginRegistrar) {
         let eventChannel = FlutterEventChannel(name: "corradodev.com/location_services_permissions/updates", binaryMessenger: registrar.messenger())
@@ -23,7 +23,7 @@ public class SwiftLocationServicesPermissionsPlugin: NSObject, FlutterPlugin, Fl
 
     public func onListen(withArguments arguments: Any?, eventSink events: @escaping FlutterEventSink) -> FlutterError? {
         locationServicesAndPermissionsCallback = { result in
-               events(result)
+            events(result.rawValue)
         }
         requestLocationServices()
         return nil
@@ -42,27 +42,26 @@ public class SwiftLocationServicesPermissionsPlugin: NSObject, FlutterPlugin, Fl
                     locationManager.requestWhenInUseAuthorization()
                     return
                 case .denied, .restricted:
-                    //TODO make this an enum and constants
-                    locationServicesAndPermissionsCallback?("LocationPermissionDenied")
+                    locationServicesAndPermissionsCallback?(.LocationPermissionDenied)
                     createSettingsAlertController(isLocationServices: false)
                     return
                 case .authorizedAlways, .authorizedWhenInUse:
-                    locationServicesAndPermissionsCallback?("LocationPermissionAllowed")
+                    locationServicesAndPermissionsCallback?(.LocationPermissionAllowed)
                     break
                 @unknown default:
                     fatalError()
             }
         } else {
-            locationServicesAndPermissionsCallback?("LocationServicesDisabled")
+            locationServicesAndPermissionsCallback?(.LocationServicesDisabled)
             createSettingsAlertController(isLocationServices: true)
         }
     }
 
     public func locationManager(_ manager: CLLocationManager, didChangeAuthorization status: CLAuthorizationStatus) {
         if (status == CLAuthorizationStatus.denied) {
-            locationServicesAndPermissionsCallback?("LocationPermissionDenied")
+            locationServicesAndPermissionsCallback?(.LocationPermissionDenied)
         } else if (status == CLAuthorizationStatus.authorizedAlways) {
-            locationServicesAndPermissionsCallback?("LocationPermissionAllowed")
+            locationServicesAndPermissionsCallback?(.LocationPermissionAllowed)
         }
     }
     
@@ -71,7 +70,6 @@ public class SwiftLocationServicesPermissionsPlugin: NSObject, FlutterPlugin, Fl
     }
 
     func createSettingsAlertController(isLocationServices:Bool) {
-        //TODO finalize text and verify settings page and steps
         let alertController = UIAlertController(title: "Location Services Required", message: Bundle.main.object(forInfoDictionaryKey: "NSLocationWhenInUseUsageDescription") as! String + "\n\nTurn on Location Services in Settings > Privacy to allow " + getAppName() + " to determine your current location", preferredStyle: .alert)
         let cancelAction = UIAlertAction(title: NSLocalizedString("Cancel", comment: ""), style: .cancel, handler: nil)
         let settingsAction = UIAlertAction(title: NSLocalizedString("Go to Settings", comment: ""), style: .default) { (UIAlertAction) in
